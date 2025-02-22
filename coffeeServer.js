@@ -42,7 +42,6 @@ app.get("/icecream", (req, res) => {
 });
 
 app.get("/cake", (req, res) => {
-  // /cake?name={}
   const { name } = req.query;
   res.json(menu.cake.filter((v) => v.name.includes(name)));
 });
