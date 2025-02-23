@@ -1,7 +1,18 @@
 const express = require("express");
 const cors = require("cors");
+const xlsx = require("xlsx");
+
 const app = express();
-app.use(cors());
+app.use(cors()); // 다른 url이 들어도록 허용!
+app.use(express.json()); // JSON 요청 본문을 허용!
+
+const coffeeXlsx = xlsx.readFile("coffee.xlsx"); // coffee 엑셀 파일
+
+const firstCoffeeSheetName = coffeeXlsx.SheetNames[0]; // 첫 번째 시트의 이름 추출
+
+const firstCoffeeSheet = coffeeXlsx.Sheets[firstCoffeeSheetName]; // 시트 이름으로 첫 번째 시트 가져오기
+
+const firstCoffeeJson = xlsx.utils.sheet_to_json(firstCoffeeSheet); // 시트를 JSON으로 변환
 
 const menu = {
   icecream: [
@@ -46,8 +57,37 @@ app.get("/cake", (req, res) => {
   res.json(menu.cake.filter((v) => v.name.includes(name)));
 });
 
+// cake 추가 로직 만들기
+app.post("/cake", (req, res) => {
+  const newCake = req.body;
+  if (!newCake.name || !newCake.price || !newCake.kcal) {
+    return res.json({ message: "요청 데이터 오류!" });
+  }
+  const result = menu.cake.find((v) => v.name == newCake.name);
+  if (result) {
+    return res.json({ message: "이름 중복 오류!" });
+  }
+  menu.cake.push(newCake);
+  res.json({ message: "케이크 성공" });
+});
+
 app.get("/coffee", (req, res) => {
   res.json(menu.coffee);
+});
+
+app.post("/coffee", (req, res) => {
+  const newCoffee = req.body;
+  if (!newCoffee.name || !newCoffee.price || !newCoffee.kcal) {
+    return res.json({ message: "요청 데이터 오류!" });
+  }
+
+  const result = menu.coffee.find((v) => v.name == newCoffee.name);
+  if (result) {
+    return res.json({ message: "이름 중복 오류!" });
+  }
+
+  menu.coffee.push(newCoffee);
+  res.json({ message: "커피 성공" });
 });
 
 app.listen(3000, () => {
